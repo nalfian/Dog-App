@@ -14,41 +14,22 @@ class ViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        let randomImageEndpoint = DogAPI.Endpoint.randomImageAllDog.url
-        let task =
-            URLSession.shared.dataTask(with: randomImageEndpoint){
-                (data, response, error) in
-                guard let data = data else {
-                    return
-                }
-                let decoder = JSONDecoder()
-                let imageData = try!
-                    decoder.decode(DogImage.self, from: data)
-                
-                guard let imageURL = URL(string: imageData.message) else{
-                    return
-                }
-                
-                let taskDownload = URLSession.shared.dataTask(
-                    with: imageURL,
-                    completionHandler: {(data,
-                                         response,
-                                         error) in
-                        guard let data = data else{
-                            return
-                        }
-                        let downloadImage = UIImage(data: data)
-                        DispatchQueue.main.async {
-                            self.imageView.image = downloadImage
-                        }
-                        
-                })
-                taskDownload.resume()
-        }
-        task.resume()
+        DogAPI.requestRandomImage(completionHandler: handeRandomImageResponse(imageData:error:))
     }
     
+    func handeRandomImageResponse(imageData: DogImage?, error: Error?){
+        guard let imageURL = URL(string: imageData?.message ?? "") else{
+            return
+        }
+        DogAPI.requesImageFile(url: imageURL,
+                               completionHandler: self.handleImageFileResponse(image: error:) )
+    }
+    
+    func handleImageFileResponse(image: UIImage?, error: Error?){
+        DispatchQueue.main.async {
+            self.imageView.image = image
+        }
+    }
     
 }
 
